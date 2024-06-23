@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6472] on 22 June 2024 at 6:53:16 pm'!
+'From Cuis7.1 [latest update: #6472] on 23 June 2024 at 11:27:01 am'!
 'Description '!
-!provides: 'FinancialCalculator' 1 6!
+!provides: 'FinancialCalculator' 1 7!
 SystemOrganization addCategory: #'FinancialCalculator-Tests'!
 SystemOrganization addCategory: #FinancialCalculator!
 
@@ -27,7 +27,7 @@ TVM class
 
 !classDefinition: #Perpetuity category: #FinancialCalculator!
 TVM subclass: #Perpetuity
-	instanceVariableNames: 'annuity'
+	instanceVariableNames: 'annuity firstPeriod'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FinancialCalculator'!
@@ -47,7 +47,7 @@ TVMCollection class
 
 !classDefinition: #Annuity category: #FinancialCalculator!
 TVMCollection subclass: #Annuity
-	instanceVariableNames: 'annuity totalPeriod'
+	instanceVariableNames: 'annuity firstPeriod lastPeriod'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FinancialCalculator'!
@@ -108,11 +108,23 @@ atPeriod: aPeriod interestRate: aInterestRate
 
 	self subclassResponsibility! !
 
-!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 15:58:55'!
-atPeriod: aPeriod
-	^ TVMPoint period: aPeriod money: annuity! !
+!Perpetuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:17:38'!
+setAnnuity: aAnnuity
+annuity := aAnnuity ! !
 
-!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 18:41:37'!
+!Perpetuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:05:33'!
+setFirstPeriod: aFirstPeriod
+firstPeriod := aFirstPeriod ! !
+
+!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 11:07:41'!
+atPeriod: aPeriod
+aPeriod >= firstPeriod ifTrue: [
+	^ TVMPoint
+		period: aPeriod
+		money: annuity.
+		] ifFalse: [ ^nil]! !
+
+!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 11:08:26'!
 atPeriod: aPeriod interestRate: aInterestRate
 	aPeriod isInfinite
 		ifTrue: [ ^ TVMPoint
@@ -120,12 +132,18 @@ atPeriod: aPeriod interestRate: aInterestRate
 				money: aPeriod"can't reference Infinity so pass the infinite argument" ]
 		ifFalse: [ | tvm |
 			tvm := TVMPoint
-				period: 0
+				period: firstPeriod
 				money: annuity / aInterestRate.
 			tvm := tvm
 				shiftPeriodBy: aPeriod
 				interestRate: aInterestRate.
 			^ tvm ].! !
+
+!Perpetuity class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:17:01'!
+annuity: aAnnuity firstPeriod: aFirstPeriod
+| instance |
+instance := self new.
+^ instance setAnnuity: aAnnuity ; setFirstPeriod: aFirstPeriod.! !
 
 !TVMCollection methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 18:32:37'!
 atPeriod: aPeriod
@@ -151,14 +169,35 @@ atPeriod: aPeriod interestRate: aInterestRate
 do: aBlock
 	self subclassResponsibility! !
 
-!Annuity methodsFor: 'enumerating' stamp: 'nafiz 6/22/2024 15:50:02'!
+!Annuity methodsFor: 'enumerating' stamp: 'nafiz 6/23/2024 11:14:00'!
 do: aBlock
-	1
-		to: totalPeriod
+	firstPeriod
+		to: lastPeriod + 1
 		do: [ :period |
-			TVMPoint
+			aBlock value: (TVMPoint
 				period: period
-				money: annuity ].! !
+				money: annuity) ].! !
+
+!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:03'!
+setAnnuity: aAnnuity
+annuity := aAnnuity ! !
+
+!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:19'!
+setFirstPeriod: aFirstPeriod
+firstPeriod := aFirstPeriod ! !
+
+!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:35'!
+setLastPeriod: aLastPeriod
+	lastPeriod := 	aLastPeriod .! !
+
+!Annuity class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:20:04'!
+annuity: aAnnuity firstPeriod: aFirstPeriod lastPeriod: aLastPeriod
+	| instance |
+	instance := self new.
+	^ instance
+		setAnnuity: aAnnuity;
+		setFirstPeriod: aFirstPeriod;
+		setLastPeriod: aLastPeriod.! !
 
 !TVMPoint methodsFor: 'accessing' stamp: 'nafiz 6/22/2024 10:56:24'!
 money
@@ -192,10 +231,11 @@ money := aMoney! !
 setPeriod: aPeriod
 	period := aPeriod.! !
 
-!TVMPoint class methodsFor: 'instance creation' stamp: 'nafiz 6/22/2024 13:07:31'!
+!TVMPoint class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:10:29'!
 period: aTime money: aMoney
-	^ self
-		new;
+| instance |
+instance := self new.
+	^ instance
 		setPeriod: aTime;
 		setMoney: aMoney.! !
 
