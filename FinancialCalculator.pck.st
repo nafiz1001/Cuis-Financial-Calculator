@@ -1,6 +1,6 @@
-'From Cuis7.1 [latest update: #6472] on 23 June 2024 at 11:27:01 am'!
+'From Cuis7.1 [latest update: #6472] on 23 June 2024 at 9:51:06 pm'!
 'Description '!
-!provides: 'FinancialCalculator' 1 7!
+!provides: 'FinancialCalculator' 1 8!
 SystemOrganization addCategory: #'FinancialCalculator-Tests'!
 SystemOrganization addCategory: #FinancialCalculator!
 
@@ -124,20 +124,16 @@ aPeriod >= firstPeriod ifTrue: [
 		money: annuity.
 		] ifFalse: [ ^nil]! !
 
-!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 11:08:26'!
+!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:36:14'!
 atPeriod: aPeriod interestRate: aInterestRate
-	aPeriod isInfinite
-		ifTrue: [ ^ TVMPoint
-				period: aPeriod
-				money: aPeriod"can't reference Infinity so pass the infinite argument" ]
-		ifFalse: [ | tvm |
+| tvm |
 			tvm := TVMPoint
 				period: firstPeriod
 				money: annuity / aInterestRate.
 			tvm := tvm
 				shiftPeriodBy: aPeriod
 				interestRate: aInterestRate.
-			^ tvm ].! !
+			^ tvm.! !
 
 !Perpetuity class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:17:01'!
 annuity: aAnnuity firstPeriod: aFirstPeriod
@@ -211,17 +207,21 @@ period
 atPeriod: aPeriod
 	aPeriod = period ifTrue: [ ^ self ] ifFalse: [ ^ nil ]! !
 
-!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 12:48:11'!
+!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:50:10'!
 atPeriod: aPeriod interestRate: aInterestRate
-| periodShiftAmount |
-periodShiftAmount := aPeriod - period.
-^ self shiftPeriodBy: periodShiftAmount interestRate: aInterestRate.! !
+	^ self
+		shiftPeriodBy: aPeriod - period
+		interestRate: aInterestRate.! !
 
-!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 15:38:50'!
+!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:47:50'!
 shiftPeriodBy: aPeriodShiftAmount interestRate: aInterestRate
 	^ TVMPoint
 		period: period + aPeriodShiftAmount
-		money: money * (1 + aInterestRate raisedTo: aPeriodShiftAmount).! !
+		money:
+			money *
+				(aInterestRate zero
+					ifTrue: [ 1 ]
+					ifFalse: [ 1 + aInterestRate raisedTo: aPeriodShiftAmount ]).! !
 
 !TVMPoint methodsFor: 'private' stamp: 'nafiz 6/22/2024 10:55:50'!
 setMoney: aMoney
