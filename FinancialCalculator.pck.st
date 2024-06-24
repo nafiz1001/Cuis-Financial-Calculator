@@ -1,19 +1,9 @@
-'From Cuis7.1 [latest update: #6472] on 23 June 2024 at 9:51:06 pm'!
+'From Cuis7.1 [latest update: #6472] on 24 June 2024 at 3:36:38 pm'!
 'Description '!
-!provides: 'FinancialCalculator' 1 8!
+!provides: 'FinancialCalculator' 1 12!
 SystemOrganization addCategory: #'FinancialCalculator-Tests'!
 SystemOrganization addCategory: #FinancialCalculator!
 
-
-!classDefinition: #TVMTests category: #'FinancialCalculator-Tests'!
-TestCase subclass: #TVMTests
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'FinancialCalculator-Tests'!
-!classDefinition: 'TVMTests class' category: #'FinancialCalculator-Tests'!
-TVMTests class
-	instanceVariableNames: ''!
 
 !classDefinition: #TVM category: #FinancialCalculator!
 Object subclass: #TVM
@@ -25,29 +15,9 @@ Object subclass: #TVM
 TVM class
 	instanceVariableNames: ''!
 
-!classDefinition: #Perpetuity category: #FinancialCalculator!
-TVM subclass: #Perpetuity
-	instanceVariableNames: 'annuity firstPeriod'
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'FinancialCalculator'!
-!classDefinition: 'Perpetuity class' category: #FinancialCalculator!
-Perpetuity class
-	instanceVariableNames: ''!
-
-!classDefinition: #TVMCollection category: #FinancialCalculator!
-TVM subclass: #TVMCollection
-	instanceVariableNames: ''
-	classVariableNames: ''
-	poolDictionaries: ''
-	category: 'FinancialCalculator'!
-!classDefinition: 'TVMCollection class' category: #FinancialCalculator!
-TVMCollection class
-	instanceVariableNames: ''!
-
 !classDefinition: #Annuity category: #FinancialCalculator!
-TVMCollection subclass: #Annuity
-	instanceVariableNames: 'annuity firstPeriod lastPeriod'
+TVM subclass: #Annuity
+	instanceVariableNames: 'A n g'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FinancialCalculator'!
@@ -55,189 +25,131 @@ TVMCollection subclass: #Annuity
 Annuity class
 	instanceVariableNames: ''!
 
-!classDefinition: #TVMPoint category: #FinancialCalculator!
-TVM subclass: #TVMPoint
-	instanceVariableNames: 'period money'
+!classDefinition: #TVMPresent category: #FinancialCalculator!
+TVM subclass: #TVMPresent
+	instanceVariableNames: 'money'
 	classVariableNames: ''
 	poolDictionaries: ''
 	category: 'FinancialCalculator'!
-!classDefinition: 'TVMPoint class' category: #FinancialCalculator!
-TVMPoint class
+!classDefinition: 'TVMPresent class' category: #FinancialCalculator!
+TVMPresent class
+	instanceVariableNames: ''!
+
+!classDefinition: #TVMShifted category: #FinancialCalculator!
+TVM subclass: #TVMShifted
+	instanceVariableNames: 'tvm periodShift interestRate'
+	classVariableNames: ''
+	poolDictionaries: ''
+	category: 'FinancialCalculator'!
+!classDefinition: 'TVMShifted class' category: #FinancialCalculator!
+TVMShifted class
 	instanceVariableNames: ''!
 
 
-!TVMTests methodsFor: 'testing' stamp: 'nafiz 6/22/2024 15:38:50'!
-testFutureToPresent
-	| tvm futureTVM |
-	tvm := TVMPoint
-		period: 1
-		money: 1.
-	futureTVM := tvm
-		shiftPeriodBy: -1
-		interestRate: 100 percent.
-	self
-		assert: futureTVM period
-		equals: 0.
-	self
-		assert: futureTVM money
-		equals: 1 / 2.! !
-
-!TVMTests methodsFor: 'testing' stamp: 'nafiz 6/22/2024 15:38:50'!
-testPresentToFuture
-	| tvm pastTVM |
-	tvm := TVMPoint
-		period: 0
-		money: 1.
-	pastTVM := tvm
-		shiftPeriodBy: 1
-		interestRate: 100 percent.
-	self
-		assert: pastTVM period
-		equals: 1.
-	self
-		assert: pastTVM money
-		equals: 2.! !
-
-!TVM methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 15:58:26'!
-atPeriod: aPeriod
+!TVM methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:09:32'!
+allAtPeriod: aPeriod interestRate: aInterestRate
 
 	self subclassResponsibility! !
 
-!TVM methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 15:42:22'!
-atPeriod: aPeriod interestRate: aInterestRate
-
-	self subclassResponsibility! !
-
-!Perpetuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:17:38'!
-setAnnuity: aAnnuity
-annuity := aAnnuity ! !
-
-!Perpetuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:05:33'!
-setFirstPeriod: aFirstPeriod
-firstPeriod := aFirstPeriod ! !
-
-!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 11:07:41'!
+!TVM methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 12:48:13'!
 atPeriod: aPeriod
-aPeriod >= firstPeriod ifTrue: [
-	^ TVMPoint
-		period: aPeriod
-		money: annuity.
-		] ifFalse: [ ^nil]! !
+	self subclassResponsibility ! !
 
-!Perpetuity methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:36:14'!
-atPeriod: aPeriod interestRate: aInterestRate
-| tvm |
-			tvm := TVMPoint
-				period: firstPeriod
-				money: annuity / aInterestRate.
-			tvm := tvm
-				shiftPeriodBy: aPeriod
-				interestRate: aInterestRate.
-			^ tvm.! !
+!TVM methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:11:58'!
+moneyAtPeriod: aPeriod interestRate: aInterestRate
+^ (self allAtPeriod: aPeriod interestRate: aInterestRate) money! !
 
-!Perpetuity class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:17:01'!
-annuity: aAnnuity firstPeriod: aFirstPeriod
-| instance |
-instance := self new.
-^ instance setAnnuity: aAnnuity ; setFirstPeriod: aFirstPeriod.! !
+!Annuity methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:46:21'!
+allAtPeriod: aPeriod interestRate: aInterestRate
+	^ (TVMPresent money: (self growingAnnuityAtInterestRate: aInterestRate)) allAtPeriod: aPeriod interestRate: aInterestRate! !
 
-!TVMCollection methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 18:32:37'!
+!Annuity methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:27:27'!
 atPeriod: aPeriod
-	self do: [ :tvm | | foundTVM |
-		foundTVM := tvm atPeriod: aPeriod.
-		foundTVM ifNotNil: [ ^foundTVM ] ].
-	^ nil! !
+	^ TVMPresent
+		money: (aPeriod <= n ifTrue: (A * (1 + g) * aPeriod) ifFalse: 0)
+		period: aPeriod.! !
 
-!TVMCollection methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 15:38:50'!
-atPeriod: aPeriod interestRate: aInterestRate
-	| totalMoney |
-	totalMoney := 0.
-	self do: [ :tvm | | newTVM |
-		newTVM := tvm
-			atPeriod: aPeriod
-			interestRate: aInterestRate.
-		totalMoney := totalMoney + newTVM money ].
-	^ TVMPoint
-		period: aPeriod
-		money: totalMoney.! !
+!Annuity methodsFor: 'private' stamp: 'nafiz 6/24/2024 14:45:57'!
+growingAnnuityAtInterestRate: aInterestRate
 
-!TVMCollection methodsFor: 'enumerating' stamp: 'nafiz 6/22/2024 15:15:20'!
-do: aBlock
-	self subclassResponsibility! !
+	^ A / (aInterestRate - g) * (1 - (1 + g / (1 + aInterestRate)) ^ n)! !
 
-!Annuity methodsFor: 'enumerating' stamp: 'nafiz 6/23/2024 11:14:00'!
-do: aBlock
-	firstPeriod
-		to: lastPeriod + 1
-		do: [ :period |
-			aBlock value: (TVMPoint
-				period: period
-				money: annuity) ].! !
+!TVMPresent methodsFor: 'private' stamp: 'nafiz 6/22/2024 10:55:50'!
+setMoney: aMoney
+money := aMoney! !
 
-!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:03'!
-setAnnuity: aAnnuity
-annuity := aAnnuity ! !
-
-!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:19'!
-setFirstPeriod: aFirstPeriod
-firstPeriod := aFirstPeriod ! !
-
-!Annuity methodsFor: 'private' stamp: 'nafiz 6/23/2024 11:09:35'!
-setLastPeriod: aLastPeriod
-	lastPeriod := 	aLastPeriod .! !
-
-!Annuity class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:20:04'!
-annuity: aAnnuity firstPeriod: aFirstPeriod lastPeriod: aLastPeriod
-	| instance |
-	instance := self new.
-	^ instance
-		setAnnuity: aAnnuity;
-		setFirstPeriod: aFirstPeriod;
-		setLastPeriod: aLastPeriod.! !
-
-!TVMPoint methodsFor: 'accessing' stamp: 'nafiz 6/22/2024 10:56:24'!
-money
-^money! !
-
-!TVMPoint methodsFor: 'accessing' stamp: 'nafiz 6/22/2024 11:20:58'!
-period
-^period! !
-
-!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/22/2024 18:26:09'!
-atPeriod: aPeriod
-	aPeriod = period ifTrue: [ ^ self ] ifFalse: [ ^ nil ]! !
-
-!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:50:10'!
-atPeriod: aPeriod interestRate: aInterestRate
-	^ self
-		shiftPeriodBy: aPeriod - period
-		interestRate: aInterestRate.! !
-
-!TVMPoint methodsFor: 'tvm' stamp: 'nafiz 6/23/2024 21:47:50'!
-shiftPeriodBy: aPeriodShiftAmount interestRate: aInterestRate
-	^ TVMPoint
-		period: period + aPeriodShiftAmount
+!TVMPresent methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:49:26'!
+allAtPeriod: aPeriod interestRate: aInterestRate
+	^ TVMPresent
 		money:
 			money *
 				(aInterestRate zero
 					ifTrue: [ 1 ]
-					ifFalse: [ 1 + aInterestRate raisedTo: aPeriodShiftAmount ]).! !
+					ifFalse: [ 1 + aInterestRate raisedTo: aPeriod ])
+		period: aPeriod.! !
 
-!TVMPoint methodsFor: 'private' stamp: 'nafiz 6/22/2024 10:55:50'!
-setMoney: aMoney
-money := aMoney! !
+!TVMPresent methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:10:23'!
+atPeriod: aPeriod
+	aPeriod zero
+		ifTrue: [ ^ self ]
+		ifFalse: [ ^ TVMPresent money: 0 period: aPeriod ].! !
 
-!TVMPoint methodsFor: 'private' stamp: 'nafiz 6/22/2024 11:25:27'!
-setPeriod: aPeriod
-	period := aPeriod.! !
+!TVMPresent methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 13:42:34'!
+money
+^ money! !
 
-!TVMPoint class methodsFor: 'instance creation' stamp: 'nafiz 6/23/2024 11:10:29'!
-period: aTime money: aMoney
-| instance |
-instance := self new.
-	^ instance
-		setPeriod: aTime;
-		setMoney: aMoney.! !
+!TVMPresent class methodsFor: 'instance creation' stamp: 'nafiz 6/24/2024 13:47:29'!
+money: aMoney
+	^ self new setMoney: aMoney.! !
+
+!TVMPresent class methodsFor: 'instance creation' stamp: 'nafiz 6/24/2024 14:18:14'!
+money: aMoney period: aPeriod
+	^ TVMShifted 		tvm: (self new setMoney: aMoney) periodShift: aPeriod! !
+
+!TVMShifted methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 14:34:10'!
+allAtPeriod: aPeriod interestRate: aInterestRate
+	| newTVM |
+	newTVM := tvm
+		allAtPeriod: periodShift
+		interestRate: interestRate.
+	newTVM := newTVM
+		allAtPeriod: aPeriod - periodShift
+		interestRate: aInterestRate.
+	^ newTVM.! !
+
+!TVMShifted methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 12:37:33'!
+atPeriod: aPeriod
+	^ tvm atPeriod: aPeriod - periodShift.! !
+
+!TVMShifted methodsFor: 'tvm' stamp: 'nafiz 6/24/2024 13:52:36'!
+money
+	^ tvm money.! !
+
+!TVMShifted methodsFor: 'private' stamp: 'nafiz 6/24/2024 12:40:27'!
+setInterestRate: aInterestRate
+interestRate := aInterestRate! !
+
+!TVMShifted methodsFor: 'private' stamp: 'nafiz 6/24/2024 12:29:06'!
+setPeriodShift: aPeriodShift
+periodShift := aPeriodShift! !
+
+!TVMShifted methodsFor: 'private' stamp: 'nafiz 6/24/2024 12:30:56'!
+setTVM: aTVM
+tvm := aTVM! !
+
+!TVMShifted class methodsFor: 'as yet unclassified' stamp: 'nafiz 6/24/2024 13:45:46'!
+tvm: aTVM periodShift: aPeriodShift
+	^ self
+		tvm: aTVM
+		periodShift: aPeriodShift
+		interestRate: 0.! !
+
+!TVMShifted class methodsFor: 'as yet unclassified' stamp: 'nafiz 6/24/2024 13:46:05'!
+tvm: aTVM periodShift: aPeriodShift interestRate: aInterestRate
+^ self new 
+		setTVM: aTVM;
+		setPeriodShift: aPeriodShift;
+		setInterestRate: aInterestRate.! !
 
 !Number methodsFor: '*FinancialCalculator' stamp: 'nafiz 6/22/2024 12:40:10'!
 percent
